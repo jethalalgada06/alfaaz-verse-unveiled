@@ -1,96 +1,254 @@
 
+import { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
-import PoemCard from '@/components/PoemCard';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface UserProfile {
+  id: string;
+  username: string;
+  full_name: string | null;
+  bio: string | null;
+  writing_style_tags: string | null;
+  profile_image_url: string | null;
+}
+
+interface Poem {
+  id: string;
+  content: string;
+  form_tags: string | null;
+  created_at: string;
+}
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('poems');
+  const [isEditing, setIsEditing] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userPoems, setUserPoems] = useState<Poem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const userPoems = [
-    {
-      id: 'user1',
-      title: 'Midnight Reflections',
-      content: `In the quiet hours when the world sleeps,
-I find myself in conversation with the stars.
-They tell me stories of distant worlds,
-Where words have wings and dreams take flight.
+  const [editForm, setEditForm] = useState({
+    username: '',
+    full_name: '',
+    bio: '',
+    writing_style_tags: ''
+  });
 
-Each thought a constellation,
-Each feeling a cosmic dance,
-In this infinite space of possibility
-Where my heart learns to believe again.`,
-      author: 'Poet Name',
-      likes: 89,
-      comments: 12,
-      isLiked: false,
-      isBookmarked: false,
-      timestamp: '2 days ago',
-      style: 'Free Verse'
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+      fetchUserPoems();
     }
-  ];
+  }, [user]);
 
-  const stats = [
-    { label: 'Poems', value: '23' },
-    { label: 'Followers', value: '156' },
-    { label: 'Following', value: '89' },
-    { label: 'Likes', value: '1.2K' }
-  ];
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      setProfile(data);
+      setEditForm({
+        username: data.username || '',
+        full_name: data['full name'] || '',
+        bio: data.bio || '',
+        writing_style_tags: data.writing_style_tags || ''
+      });
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserPoems = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('poems table')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching poems:', error);
+        return;
+      }
+
+      setUserPoems(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          username: editForm.username,
+          'full name': editForm.full_name,
+          bio: editForm.bio,
+          writing_style_tags: editForm.writing_style_tags
+        })
+        .eq('id', user?.id);
+
+      if (error) {
+        toast({
+          title: "Error updating profile",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully"
+      });
+
+      setIsEditing(false);
+      fetchProfile();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
+  };
+
+  const getUserInitials = () => {
+    if (profile?.['full name']) {
+      return profile['full name']
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    return profile?.username?.charAt(0).toUpperCase() || 'U';
+  };
+
+  const getWritingStyleTags = () => {
+    if (!profile?.writing_style_tags) return [];
+    return profile.writing_style_tags.split(',').map(tag => tag.trim()).filter(Boolean);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-muted">
+        <Navigation />
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted">
       <Navigation />
       
       <main className="max-w-4xl mx-auto p-4 pt-8">
-        {/* Profile Header */}
         <Card className="glass-card border-0 shadow-lg mb-8">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start gap-6">
               <Avatar className="w-24 h-24">
-                <AvatarImage src="" />
-                <AvatarFallback className="bg-accent text-white text-2xl">P</AvatarFallback>
+                <AvatarImage src={profile?.profile_image_url || ''} />
+                <AvatarFallback className="bg-accent text-white text-2xl">
+                  {getUserInitials()}
+                </AvatarFallback>
               </Avatar>
               
               <div className="flex-1">
-                <h1 className="text-3xl font-serif font-bold text-primary mb-2">Poet Name</h1>
-                <p className="text-secondary/70 mb-4">
-                  Weaving words into worlds, one verse at a time. Poetry is the language of the soul, 
-                  speaking truths that ordinary words cannot capture.
-                </p>
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {['Free Verse', 'Narrative', 'Nature'].map((tag) => (
-                    <span key={tag} className="text-xs bg-accent/10 text-accent px-3 py-1 rounded-full">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex gap-6 text-sm">
-                  {stats.map((stat) => (
-                    <div key={stat.label} className="text-center">
-                      <div className="font-semibold text-primary">{stat.value}</div>
-                      <div className="text-secondary/60">{stat.label}</div>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <Input
+                      placeholder="Full Name"
+                      value={editForm.full_name}
+                      onChange={(e) => setEditForm({...editForm, full_name: e.target.value})}
+                    />
+                    <Input
+                      placeholder="Username"
+                      value={editForm.username}
+                      onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                    />
+                    <Textarea
+                      placeholder="Bio"
+                      value={editForm.bio}
+                      onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                    />
+                    <Input
+                      placeholder="Writing styles (comma separated)"
+                      value={editForm.writing_style_tags}
+                      onChange={(e) => setEditForm({...editForm, writing_style_tags: e.target.value})}
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={handleUpdateProfile}>Save</Button>
+                      <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <>
+                    <h1 className="text-3xl font-serif font-bold text-primary mb-2">
+                      {profile?.['full name'] || profile?.username || 'User'}
+                    </h1>
+                    <p className="text-secondary/70 mb-4">
+                      {profile?.bio || 'No bio available. Click "Edit Profile" to add one.'}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {getWritingStyleTags().map((tag) => (
+                        <span key={tag} className="text-xs bg-accent/10 text-accent px-3 py-1 rounded-full">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-6 text-sm">
+                      <div className="text-center">
+                        <div className="font-semibold text-primary">{userPoems.length}</div>
+                        <div className="text-secondary/60">Poems</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-primary">0</div>
+                        <div className="text-secondary/60">Followers</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-primary">0</div>
+                        <div className="text-secondary/60">Following</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-primary">0</div>
+                        <div className="text-secondary/60">Likes</div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
-              <div className="flex gap-2">
-                <Button variant="outline" className="border-gray-200">
-                  Edit Profile
-                </Button>
-                <Button className="bg-accent hover:bg-accent/90 text-white">
-                  Follow
-                </Button>
-              </div>
+              {!isEditing && (
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsEditing(true)}>
+                    Edit Profile
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Tabs */}
         <div className="flex gap-1 mb-6">
           {[
             { id: 'poems', label: 'Poems', icon: '📝' },
@@ -113,13 +271,47 @@ Where my heart learns to believe again.`,
           ))}
         </div>
 
-        {/* Content */}
         <div className="space-y-6">
-          {activeTab === 'poems' && userPoems.map((poem) => (
-            <div key={poem.id} className="animate-fade-in">
-              <PoemCard poem={poem} />
+          {activeTab === 'poems' && (
+            <div className="space-y-6">
+              {userPoems.length > 0 ? (
+                userPoems.map((poem) => (
+                  <Card key={poem.id} className="glass-card border-0 shadow-lg">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage src={profile?.profile_image_url || ''} />
+                          <AvatarFallback className="bg-accent text-white">
+                            {getUserInitials()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{profile?.['full name'] || profile?.username}</div>
+                          <div className="text-sm text-secondary/60">
+                            {new Date(poem.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                        {poem.form_tags && (
+                          <span className="ml-auto text-xs bg-accent/10 text-accent px-2 py-1 rounded-full">
+                            {poem.form_tags}
+                          </span>
+                        )}
+                      </div>
+                      <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed">
+                        {poem.content}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-12">
+                  <span className="text-6xl mb-4 block">📝</span>
+                  <h3 className="text-xl font-serif text-primary mb-2">No poems yet</h3>
+                  <p className="text-secondary/60">Start creating to see your poems here</p>
+                </div>
+              )}
             </div>
-          ))}
+          )}
           
           {activeTab === 'bookmarks' && (
             <div className="text-center py-12">

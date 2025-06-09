@@ -17,7 +17,6 @@ const Auth = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (user) {
       navigate('/home');
@@ -31,7 +30,11 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/home`
+          redirectTo: `${window.location.origin}/home`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent select_account',
+          }
         }
       });
 
