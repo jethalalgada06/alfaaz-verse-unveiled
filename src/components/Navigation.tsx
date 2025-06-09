@@ -3,11 +3,15 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(location.pathname);
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
   const navItems = [
     { path: '/home', label: 'Feed', icon: '🏠' },
@@ -19,6 +23,36 @@ const Navigation = () => {
   const handleNavigation = (path: string) => {
     setActiveTab(path);
     navigate(path);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "Come back soon!",
+      });
+      navigate('/auth');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        title: "Error signing out",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getUserInitials = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    return user?.email?.charAt(0).toUpperCase() || 'U';
   };
 
   return (
@@ -54,9 +88,15 @@ const Navigation = () => {
 
           {/* User Avatar */}
           <div className="flex items-center gap-3">
-            <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-accent transition-all">
-              <AvatarImage src="" />
-              <AvatarFallback className="bg-accent text-white text-sm">P</AvatarFallback>
+            <Avatar 
+              className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-accent transition-all"
+              onClick={handleSignOut}
+              title="Click to sign out"
+            >
+              <AvatarImage src={user?.user_metadata?.avatar_url} />
+              <AvatarFallback className="bg-accent text-white text-sm">
+                {getUserInitials()}
+              </AvatarFallback>
             </Avatar>
           </div>
         </div>

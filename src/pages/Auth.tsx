@@ -1,27 +1,124 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate('/home');
+    }
+  }, [user, navigate]);
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     
-    // Simulate Google auth process
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Welcome to Alfaaz!",
-        description: "Successfully signed in with Google",
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/home`
+        }
       });
-      navigate('/home');
-    }, 2000);
+
+      if (error) {
+        console.error('Google auth error:', error);
+        toast({
+          title: "Authentication Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Google auth error:', error);
+      toast({
+        title: "Authentication Error",
+        description: "Failed to sign in with Google",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEmailAuth = async () => {
+    if (!email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/home`
+          }
+        });
+
+        if (error) {
+          toast({
+            title: "Sign Up Error",
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Check your email",
+            description: "We've sent you a confirmation link",
+          });
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast({
+            title: "Sign In Error",
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Welcome back!",
+            description: "Successfully signed in",
+          });
+          navigate('/home');
+        }
+      }
+    } catch (error) {
+      console.error('Email auth error:', error);
+      toast({
+        title: "Authentication Error",
+        description: "Something went wrong",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -34,22 +131,68 @@ const Auth = () => {
 
         <Card className="glass-card border-0 shadow-2xl">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-serif text-primary">Welcome</CardTitle>
+            <CardTitle className="text-2xl font-serif text-primary">
+              {isSignUp ? 'Join Alfaaz' : 'Welcome Back'}
+            </CardTitle>
             <CardDescription className="text-secondary/70">
-              Join the community of poets and storytellers
+              {isSignUp 
+                ? 'Join the community of poets and storytellers' 
+                : 'Continue your poetic journey'
+              }
             </CardDescription>
           </CardHeader>
           
           <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12"
+              />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-12"
+              />
+              <Button
+                onClick={handleEmailAuth}
+                disabled={isLoading}
+                className="w-full bg-secondary hover:bg-secondary/90 text-white h-12 text-base font-medium"
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    {isSignUp ? 'Creating account...' : 'Signing in...'}
+                  </div>
+                ) : (
+                  isSignUp ? 'Create Account' : 'Sign In'
+                )}
+              </Button>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+
             <Button
               onClick={handleGoogleAuth}
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-base font-medium transition-all duration-300"
+              variant="outline"
+              className="w-full h-12 text-base font-medium"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                  Signing in...
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                  Connecting...
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -63,6 +206,19 @@ const Auth = () => {
                 </div>
               )}
             </Button>
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-secondary hover:text-secondary/80 underline"
+              >
+                {isSignUp 
+                  ? 'Already have an account? Sign in' 
+                  : "Don't have an account? Sign up"
+                }
+              </button>
+            </div>
 
             <div className="text-center pt-4">
               <p className="text-sm text-secondary/60">
