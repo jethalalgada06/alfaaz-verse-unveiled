@@ -29,14 +29,14 @@ const IntroAnimation = ({ onComplete }: IntroAnimationProps) => {
         
         {showText && (
           <div className="animate-slide-up">
-            <p className="text-xl md:text-2xl text-black/70 font-light tracking-wide">
+            <p className="text-xl md:text-2xl text-black font-light tracking-wide">
               Where words come alive
             </p>
           </div>
         )}
         
         <div className="flex justify-center pt-8">
-          <div className="w-1 h-16 bg-black/30 animate-pulse"></div>
+          <div className="w-1 h-16 bg-black animate-pulse"></div>
         </div>
       </div>
     </div>
