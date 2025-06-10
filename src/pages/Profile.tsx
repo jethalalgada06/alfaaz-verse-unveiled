@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 interface UserProfile {
   id: string;
   username: string;
-  full_name: string | null;
+  "full name": string | null;
   bio: string | null;
   writing_style_tags: string | null;
   profile_image_url: string | null;
