@@ -26,20 +26,20 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'rgb(34 197 94)',
-					foreground: 'rgb(15 23 32)'
+					DEFAULT: 'rgb(0 0 0)',
+					foreground: 'rgb(255 255 255)'
 				},
 				secondary: {
-					DEFAULT: 'rgb(71 85 105)',
-					foreground: 'rgb(248 250 252)'
+					DEFAULT: 'rgb(245 245 245)',
+					foreground: 'rgb(0 0 0)'
 				},
 				accent: {
-					DEFAULT: 'rgb(34 197 94)',
-					foreground: 'rgb(15 23 32)'
+					DEFAULT: 'rgb(0 0 0)',
+					foreground: 'rgb(255 255 255)'
 				},
 				muted: {
-					DEFAULT: 'rgb(51 65 85)',
-					foreground: 'rgb(148 163 184)'
+					DEFAULT: 'rgb(245 245 245)',
+					foreground: 'rgb(115 115 115)'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
