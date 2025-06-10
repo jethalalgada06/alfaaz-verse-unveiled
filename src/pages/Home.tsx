@@ -2,84 +2,77 @@
 import { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import PoemCard from '@/components/PoemCard';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface Poem {
+  id: string;
+  content: string;
+  form_tags: string | null;
+  created_at: string;
+  user_id: string;
+  users: {
+    id: string;
+    username: string;
+    "full name": string | null;
+    profile_image_url: string | null;
+  };
+}
 
 const Home = () => {
-  const [poems, setPoems] = useState([]);
+  const [poems, setPoems] = useState<Poem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  // Sample poems data
   useEffect(() => {
-    setTimeout(() => {
-      setPoems([
-        {
-          id: '1',
-          title: 'Whispers of Dawn',
-          content: `The morning light breaks through the veil,
-Of night's embrace so cold and pale.
-With golden rays that dance and play,
-Announcing birth of yet another day.
+    if (user) {
+      fetchPoems();
+    }
+  }, [user]);
 
-The birds sing songs of hope and cheer,
-As dewdrops glisten crystal clear.
-Each petal opens to the sun,
-A new beginning has begun.`,
-          author: 'Sarah Mitchell',
-          likes: 127,
-          comments: 23,
-          isLiked: false,
-          isBookmarked: false,
-          timestamp: '2 hours ago',
-          style: 'Lyrical'
-        },
-        {
-          id: '2',
-          title: 'City Dreams',
-          content: `Concrete jungle, neon bright,
-Dreams get lost in endless night.
-Streets that whisper tales untold,
-Of hearts both young and spirits old.
+  const fetchPoems = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('poems table')
+        .select(`
+          *,
+          users (
+            id,
+            username,
+            "full name",
+            profile_image_url
+          )
+        `)
+        .order('created_at', { ascending: false });
 
-In coffee shops and subway cars,
-We chase our distant shining stars.
-Each face a story, each step a choice,
-In symphony of urban voice.
+      if (error) {
+        console.error('Error fetching poems:', error);
+        return;
+      }
 
-The city breathes, the city sings,
-Of broken hearts and golden rings.
-Where love is found in strangest places,
-Among the rush of nameless faces.`,
-          author: 'Marcus Chen',
-          likes: 89,
-          comments: 15,
-          isLiked: true,
-          isBookmarked: true,
-          timestamp: '4 hours ago',
-          style: 'Free Verse'
-        },
-        {
-          id: '3',
-          title: 'Ocean\'s Soliloquy',
-          content: `I am the keeper of secrets deep,
-Where ancient treasures lie asleep.
-My waves caress the moonlit shore,
-And tell of love and tales of lore.
-
-In depths where sunlight cannot reach,
-I hold the wisdom few can teach.
-Each tide that comes and goes away,
-Marks passage of another day.`,
-          author: 'Elena Rodriguez',
-          likes: 156,
-          comments: 31,
-          isLiked: false,
-          isBookmarked: false,
-          timestamp: '6 hours ago',
-          style: 'Nature'
-        }
-      ]);
+      setPoems(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
+
+  const formatPoemForCard = (poem: Poem) => {
+    return {
+      id: poem.id,
+      title: poem.form_tags || 'Untitled',
+      content: poem.content || '',
+      author: poem.users?.["full name"] || poem.users?.username || 'Anonymous',
+      avatar: poem.users?.profile_image_url,
+      likes: 0, // We'll implement likes later
+      comments: 0, // We'll implement comments later
+      isLiked: false,
+      isBookmarked: false,
+      timestamp: new Date(poem.created_at).toLocaleDateString(),
+      style: poem.form_tags
+    };
+  };
 
   return (
     <div className="min-h-screen bg-muted">
@@ -113,13 +106,19 @@ Marks passage of another day.`,
               </div>
             ))}
           </div>
-        ) : (
+        ) : poems.length > 0 ? (
           <div className="space-y-6">
             {poems.map((poem) => (
               <div key={poem.id} className="animate-fade-in">
-                <PoemCard poem={poem} />
+                <PoemCard poem={formatPoemForCard(poem)} />
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <span className="text-6xl mb-4 block">📝</span>
+            <h3 className="text-xl font-serif text-primary mb-2">No poems yet</h3>
+            <p className="text-secondary/60">Be the first to share a poem with the community!</p>
           </div>
         )}
       </main>

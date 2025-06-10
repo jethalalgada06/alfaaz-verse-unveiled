@@ -1,13 +1,40 @@
 
 import Navigation from '@/components/Navigation';
 import PoemCard from '@/components/PoemCard';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface Poem {
+  id: string;
+  content: string;
+  form_tags: string | null;
+  created_at: string;
+  user_id: string;
+  users: {
+    id: string;
+    username: string;
+    "full name": string | null;
+    profile_image_url: string | null;
+  };
+}
+
+interface FeaturedPoet {
+  id: string;
+  username: string;
+  "full name": string | null;
+  profile_image_url: string | null;
+}
 
 const Explore = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('trending');
+  const [poems, setPoems] = useState<Poem[]>([]);
+  const [featuredPoets, setFeaturedPoets] = useState<FeaturedPoet[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const filters = [
     { id: 'trending', label: 'Trending', icon: '🔥' },
@@ -17,51 +44,101 @@ const Explore = () => {
     { id: 'free-verse', label: 'Free Verse', icon: '🌊' }
   ];
 
-  const explorerPoems = [
-    {
-      id: '4',
-      title: 'Digital Silence',
-      content: `Notifications muted,
-Screen reflects my weary face—
-Peace in emptiness.`,
-      author: 'Yuki Tanaka',
-      likes: 203,
-      comments: 41,
+  useEffect(() => {
+    if (user) {
+      fetchPoems();
+      fetchFeaturedPoets();
+    }
+  }, [user, activeFilter]);
+
+  const fetchPoems = async () => {
+    try {
+      let query = supabase
+        .from('poems table')
+        .select(`
+          *,
+          users (
+            id,
+            username,
+            "full name",
+            profile_image_url
+          )
+        `);
+
+      // Apply filters
+      if (activeFilter === 'recent') {
+        query = query.order('created_at', { ascending: false });
+      } else if (activeFilter === 'haiku') {
+        query = query.ilike('form_tags', '%haiku%');
+      } else if (activeFilter === 'sonnet') {
+        query = query.ilike('form_tags', '%sonnet%');
+      } else if (activeFilter === 'free-verse') {
+        query = query.ilike('form_tags', '%free%');
+      } else {
+        // Default trending - order by created_at for now
+        query = query.order('created_at', { ascending: false });
+      }
+
+      const { data, error } = await query.limit(10);
+
+      if (error) {
+        console.error('Error fetching poems:', error);
+        return;
+      }
+
+      setPoems(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchFeaturedPoets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, username, "full name", profile_image_url')
+        .limit(4);
+
+      if (error) {
+        console.error('Error fetching featured poets:', error);
+        return;
+      }
+
+      setFeaturedPoets(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const formatPoemForCard = (poem: Poem) => {
+    return {
+      id: poem.id,
+      title: poem.form_tags || 'Untitled',
+      content: poem.content || '',
+      author: poem.users?.["full name"] || poem.users?.username || 'Anonymous',
+      avatar: poem.users?.profile_image_url,
+      likes: 0, // We'll implement likes later
+      comments: 0, // We'll implement comments later
       isLiked: false,
       isBookmarked: false,
-      timestamp: '1 hour ago',
-      style: 'Haiku'
-    },
-    {
-      id: '5',
-      title: 'The Collector of Moments',
-      content: `She keeps them in mason jars,
-These fragments of time—
-A laugh caught at sunset,
-The smell of rain on summer stone,
-Her grandmother's wrinkled hands
-Kneading dough with ancient wisdom.
+      timestamp: new Date(poem.created_at).toLocaleDateString(),
+      style: poem.form_tags
+    };
+  };
 
-Each moment preserved
-Like fireflies in glass,
-Glowing softly in the dark
-Of forgotten days.
-
-When loneliness visits,
-She opens a jar
-And watches memory
-Dance in the amber light
-Of what was beautiful
-And will be again.`,
-      author: 'Isabella Voss',
-      likes: 345,
-      comments: 67,
-      isLiked: true,
-      isBookmarked: false,
-      timestamp: '3 hours ago',
-      style: 'Free Verse'
+  const getPoetInitials = (poet: FeaturedPoet) => {
+    if (poet["full name"]) {
+      return poet["full name"]
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
     }
-  ];
+    return poet.username?.charAt(0).toUpperCase() || 'U';
+  };
 
   return (
     <div className="min-h-screen bg-muted">
@@ -103,29 +180,60 @@ And will be again.`,
         </div>
 
         {/* Featured Poets Section */}
-        <div className="mb-8 p-6 bg-white rounded-lg shadow-sm">
-          <h3 className="text-xl font-serif font-semibold text-primary mb-4">Featured Poets</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {['Maya Patel', 'James Wright', 'Zara Ahmed', 'Lucas Kim'].map((poet) => (
-              <div key={poet} className="text-center p-4 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-                <div className="w-16 h-16 bg-accent/20 rounded-full mx-auto mb-2 flex items-center justify-center">
-                  <span className="text-accent font-semibold">{poet.charAt(0)}</span>
+        {featuredPoets.length > 0 && (
+          <div className="mb-8 p-6 bg-white rounded-lg shadow-sm">
+            <h3 className="text-xl font-serif font-semibold text-primary mb-4">Featured Poets</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {featuredPoets.map((poet) => (
+                <div key={poet.id} className="text-center p-4 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                  <div className="w-16 h-16 bg-accent/20 rounded-full mx-auto mb-2 flex items-center justify-center">
+                    <span className="text-accent font-semibold">{getPoetInitials(poet)}</span>
+                  </div>
+                  <p className="font-medium text-secondary">{poet["full name"] || poet.username}</p>
+                  <p className="text-xs text-secondary/60">Poet</p>
                 </div>
-                <p className="font-medium text-secondary">{poet}</p>
-                <p className="text-xs text-secondary/60">Poet</p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Poems */}
+        {loading ? (
+          <div className="space-y-6">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-lg p-6 animate-pulse">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                  <div className="space-y-2">
+                    <div className="w-24 h-4 bg-gray-200 rounded"></div>
+                    <div className="w-16 h-3 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="w-48 h-6 bg-gray-200 rounded"></div>
+                  <div className="space-y-2">
+                    <div className="w-full h-4 bg-gray-200 rounded"></div>
+                    <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Poems */}
-        <div className="space-y-6">
-          {explorerPoems.map((poem) => (
-            <div key={poem.id} className="animate-fade-in">
-              <PoemCard poem={poem} />
-            </div>
-          ))}
-        </div>
+        ) : poems.length > 0 ? (
+          <div className="space-y-6">
+            {poems.map((poem) => (
+              <div key={poem.id} className="animate-fade-in">
+                <PoemCard poem={formatPoemForCard(poem)} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <span className="text-6xl mb-4 block">🔍</span>
+            <h3 className="text-xl font-serif text-primary mb-2">No poems found</h3>
+            <p className="text-secondary/60">Try a different filter or be the first to create content!</p>
+          </div>
+        )}
       </main>
     </div>
   );
