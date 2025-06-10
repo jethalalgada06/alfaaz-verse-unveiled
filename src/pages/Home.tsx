@@ -75,32 +75,32 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-background">
       <Navigation />
       
       <main className="max-w-4xl mx-auto p-4 pt-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-serif font-bold text-primary mb-2">Your Feed</h2>
-          <p className="text-secondary/70">Discover beautiful poetry from our community</p>
+          <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Your Feed</h2>
+          <p className="text-muted-foreground">Discover beautiful poetry from our community</p>
         </div>
 
         {loading ? (
           <div className="space-y-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-lg p-6 animate-pulse">
+              <div key={i} className="bg-card rounded-lg p-6 animate-pulse">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                  <div className="w-10 h-10 bg-muted rounded-full"></div>
                   <div className="space-y-2">
-                    <div className="w-24 h-4 bg-gray-200 rounded"></div>
-                    <div className="w-16 h-3 bg-gray-200 rounded"></div>
+                    <div className="w-24 h-4 bg-muted rounded"></div>
+                    <div className="w-16 h-3 bg-muted rounded"></div>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="w-48 h-6 bg-gray-200 rounded"></div>
+                  <div className="w-48 h-6 bg-muted rounded"></div>
                   <div className="space-y-2">
-                    <div className="w-full h-4 bg-gray-200 rounded"></div>
-                    <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
-                    <div className="w-5/6 h-4 bg-gray-200 rounded"></div>
+                    <div className="w-full h-4 bg-muted rounded"></div>
+                    <div className="w-3/4 h-4 bg-muted rounded"></div>
+                    <div className="w-5/6 h-4 bg-muted rounded"></div>
                   </div>
                 </div>
               </div>
@@ -117,8 +117,8 @@ const Home = () => {
         ) : (
           <div className="text-center py-12">
             <span className="text-6xl mb-4 block">📝</span>
-            <h3 className="text-xl font-serif text-primary mb-2">No poems yet</h3>
-            <p className="text-secondary/60">Be the first to share a poem with the community!</p>
+            <h3 className="text-xl font-serif text-foreground mb-2">No poems yet</h3>
+            <p className="text-muted-foreground">Be the first to share a poem with the community!</p>
           </div>
         )}
       </main>

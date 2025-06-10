@@ -125,19 +125,19 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-muted via-white to-muted flex items-center justify-center p-3 sm:p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-background flex items-center justify-center p-3 sm:p-4">
       <div className="w-full max-w-sm sm:max-w-md animate-scale-in">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-3xl sm:text-4xl font-serif font-bold text-primary mb-2">Alfaaz</h1>
-          <p className="text-sm sm:text-base text-secondary/80">Where words come alive</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Where words come alive</p>
         </div>
 
         <Card className="glass-card border-0 shadow-2xl">
           <CardHeader className="text-center pb-3 sm:pb-4 px-4 sm:px-6">
-            <CardTitle className="text-xl sm:text-2xl font-serif text-primary">
+            <CardTitle className="text-xl sm:text-2xl font-serif text-foreground">
               {isSignUp ? 'Join Alfaaz' : 'Welcome Back'}
             </CardTitle>
-            <CardDescription className="text-sm sm:text-base text-secondary/70">
+            <CardDescription className="text-sm sm:text-base text-muted-foreground">
               {isSignUp 
                 ? 'Join the community of poets and storytellers' 
                 : 'Continue your poetic journey'
@@ -152,23 +152,23 @@ const Auth = () => {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-11 sm:h-12 text-base"
+                className="h-11 sm:h-12 text-base bg-input border-border"
               />
               <Input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-11 sm:h-12 text-base"
+                className="h-11 sm:h-12 text-base bg-input border-border"
               />
               <Button
                 onClick={handleEmailAuth}
                 disabled={isLoading}
-                className="w-full bg-secondary hover:bg-secondary/90 text-white h-11 sm:h-12 text-sm sm:text-base font-medium"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 sm:h-12 text-sm sm:text-base font-medium"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin"></div>
                     <span className="text-xs sm:text-sm">
                       {isSignUp ? 'Creating account...' : 'Signing in...'}
                     </span>
@@ -181,10 +181,10 @@ const Auth = () => {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
               </div>
             </div>
 
@@ -192,11 +192,11 @@ const Auth = () => {
               onClick={handleGoogleAuth}
               disabled={isLoading}
               variant="outline"
-              className="w-full h-11 sm:h-12 text-sm sm:text-base font-medium"
+              className="w-full h-11 sm:h-12 text-sm sm:text-base font-medium border-border hover:bg-muted"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin"></div>
                   <span className="text-xs sm:text-sm">Connecting...</span>
                 </div>
               ) : (
@@ -217,7 +217,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-xs sm:text-sm text-secondary hover:text-secondary/80 underline"
+                className="text-xs sm:text-sm text-primary hover:text-primary/80 underline"
               >
                 {isSignUp 
                   ? 'Already have an account? Sign in' 
@@ -227,7 +227,7 @@ const Auth = () => {
             </div>
 
             <div className="text-center pt-3 sm:pt-4">
-              <p className="text-xs text-secondary/60 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 By continuing, you agree to our terms of service and privacy policy
               </p>
             </div>
