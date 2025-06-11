@@ -20,11 +20,11 @@ export default {
 		},
 		extend: {
 			colors: {
-				border: 'hsl(var(--border))',
-				input: 'hsl(var(--input))',
-				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+				border: 'rgb(200 200 200)',
+				input: 'rgb(255 255 255)',
+				ring: 'rgb(0 0 0)',
+				background: 'rgb(255 255 255)',
+				foreground: 'rgb(0 0 0)',
 				primary: {
 					DEFAULT: 'rgb(0 0 0)',
 					foreground: 'rgb(255 255 255)'
@@ -38,20 +38,20 @@ export default {
 					foreground: 'rgb(255 255 255)'
 				},
 				muted: {
-					DEFAULT: 'rgb(250 250 250)',
-					foreground: 'rgb(115 115 115)'
+					DEFAULT: 'rgb(245 245 245)',
+					foreground: 'rgb(60 60 60)'
 				},
 				destructive: {
-					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
+					DEFAULT: 'rgb(220 38 38)',
+					foreground: 'rgb(255 255 255)'
 				},
 				popover: {
-					DEFAULT: 'hsl(var(--popover))',
-					foreground: 'hsl(var(--popover-foreground))'
+					DEFAULT: 'rgb(255 255 255)',
+					foreground: 'rgb(0 0 0)'
 				},
 				card: {
-					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
+					DEFAULT: 'rgb(255 255 255)',
+					foreground: 'rgb(0 0 0)'
 				}
 			},
 			borderRadius: {
