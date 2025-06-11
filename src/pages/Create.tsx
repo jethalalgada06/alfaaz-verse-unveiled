@@ -45,7 +45,7 @@ const Create = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-muted pb-20">
       <Navigation />
       
       <main className="max-w-6xl mx-auto p-3 sm:p-4 pt-6 sm:pt-8">

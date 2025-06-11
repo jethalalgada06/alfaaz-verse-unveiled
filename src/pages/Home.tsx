@@ -75,7 +75,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-20">
       <Navigation />
       
       <main className="max-w-4xl mx-auto p-3 sm:p-4 pt-6 sm:pt-8">
