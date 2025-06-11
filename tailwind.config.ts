@@ -38,7 +38,7 @@ export default {
 					foreground: 'rgb(255 255 255)'
 				},
 				muted: {
-					DEFAULT: 'rgb(245 245 245)',
+					DEFAULT: 'rgb(250 250 250)',
 					foreground: 'rgb(115 115 115)'
 				},
 				destructive: {

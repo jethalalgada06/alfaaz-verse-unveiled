@@ -65,8 +65,8 @@ const Home = () => {
       content: poem.content || '',
       author: poem.users?.["full name"] || poem.users?.username || 'Anonymous',
       avatar: poem.users?.profile_image_url,
-      likes: 0, // We'll implement likes later
-      comments: 0, // We'll implement comments later
+      likes: 0,
+      comments: 0,
       isLiked: false,
       isBookmarked: false,
       timestamp: new Date(poem.created_at).toLocaleDateString(),
@@ -78,36 +78,36 @@ const Home = () => {
     <div className="min-h-screen bg-white">
       <Navigation />
       
-      <main className="max-w-4xl mx-auto p-4 pt-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-serif font-bold text-black mb-2">Your Feed</h2>
-          <p className="text-gray-600">Discover beautiful poetry from our community</p>
+      <main className="max-w-4xl mx-auto p-3 sm:p-4 pt-6 sm:pt-8">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-black mb-2">Your Feed</h2>
+          <p className="text-sm sm:text-base text-gray-600">Discover beautiful poetry from our community</p>
         </div>
 
         {loading ? (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
+              <div key={i} className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 animate-pulse">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-full"></div>
                   <div className="space-y-2">
-                    <div className="w-24 h-4 bg-gray-200 rounded"></div>
-                    <div className="w-16 h-3 bg-gray-200 rounded"></div>
+                    <div className="w-20 sm:w-24 h-3 sm:h-4 bg-gray-200 rounded"></div>
+                    <div className="w-12 sm:w-16 h-2 sm:h-3 bg-gray-200 rounded"></div>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="w-48 h-6 bg-gray-200 rounded"></div>
+                  <div className="w-32 sm:w-48 h-5 sm:h-6 bg-gray-200 rounded"></div>
                   <div className="space-y-2">
-                    <div className="w-full h-4 bg-gray-200 rounded"></div>
-                    <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
-                    <div className="w-5/6 h-4 bg-gray-200 rounded"></div>
+                    <div className="w-full h-3 sm:h-4 bg-gray-200 rounded"></div>
+                    <div className="w-3/4 h-3 sm:h-4 bg-gray-200 rounded"></div>
+                    <div className="w-5/6 h-3 sm:h-4 bg-gray-200 rounded"></div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : poems.length > 0 ? (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {poems.map((poem) => (
               <div key={poem.id} className="animate-fade-in">
                 <PoemCard poem={formatPoemForCard(poem)} />
@@ -115,10 +115,10 @@ const Home = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <span className="text-6xl mb-4 block">📝</span>
-            <h3 className="text-xl font-serif text-black mb-2">No poems yet</h3>
-            <p className="text-gray-600">Be the first to share a poem with the community!</p>
+          <div className="text-center py-8 sm:py-12">
+            <span className="text-4xl sm:text-6xl mb-4 block">📝</span>
+            <h3 className="text-lg sm:text-xl font-serif text-black mb-2">No poems yet</h3>
+            <p className="text-sm sm:text-base text-gray-600">Be the first to share a poem with the community!</p>
           </div>
         )}
       </main>
