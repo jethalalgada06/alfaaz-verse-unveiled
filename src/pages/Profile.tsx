@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
@@ -147,7 +146,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-muted">
+      <div className="min-h-screen bg-background">
         <Navigation />
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -157,16 +156,16 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-background">
       <Navigation />
       
       <main className="max-w-4xl mx-auto p-4 pt-8">
-        <Card className="glass-card border-0 shadow-lg mb-8">
+        <Card className="glass-card border-border shadow-lg mb-8">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start gap-6">
               <Avatar className="w-24 h-24">
                 <AvatarImage src={profile?.profile_image_url || ''} />
-                <AvatarFallback className="bg-accent text-white text-2xl">
+                <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                   {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
@@ -178,21 +177,25 @@ const Profile = () => {
                       placeholder="Full Name"
                       value={editForm.full_name}
                       onChange={(e) => setEditForm({...editForm, full_name: e.target.value})}
+                      className="bg-background border-border text-foreground"
                     />
                     <Input
                       placeholder="Username"
                       value={editForm.username}
                       onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                      className="bg-background border-border text-foreground"
                     />
                     <Textarea
                       placeholder="Bio"
                       value={editForm.bio}
                       onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                      className="bg-background border-border text-foreground"
                     />
                     <Input
                       placeholder="Writing styles (comma separated)"
                       value={editForm.writing_style_tags}
                       onChange={(e) => setEditForm({...editForm, writing_style_tags: e.target.value})}
+                      className="bg-background border-border text-foreground"
                     />
                     <div className="flex gap-2">
                       <Button onClick={handleUpdateProfile}>Save</Button>
@@ -201,16 +204,16 @@ const Profile = () => {
                   </div>
                 ) : (
                   <>
-                    <h1 className="text-3xl font-serif font-bold text-primary mb-2">
+                    <h1 className="text-3xl font-serif font-bold text-card-foreground mb-2">
                       {profile?.['full name'] || profile?.username || 'User'}
                     </h1>
-                    <p className="text-secondary/70 mb-4">
+                    <p className="text-muted-foreground mb-4">
                       {profile?.bio || 'No bio available. Click "Edit Profile" to add one.'}
                     </p>
                     
                     <div className="flex flex-wrap gap-2 mb-4">
                       {getWritingStyleTags().map((tag) => (
-                        <span key={tag} className="text-xs bg-accent/10 text-accent px-3 py-1 rounded-full">
+                        <span key={tag} className="text-xs bg-muted text-foreground px-3 py-1 rounded-full border border-border">
                           {tag}
                         </span>
                       ))}
@@ -218,20 +221,20 @@ const Profile = () => {
 
                     <div className="flex gap-6 text-sm">
                       <div className="text-center">
-                        <div className="font-semibold text-primary">{userPoems.length}</div>
-                        <div className="text-secondary/60">Poems</div>
+                        <div className="font-semibold text-card-foreground">{userPoems.length}</div>
+                        <div className="text-muted-foreground">Poems</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-semibold text-primary">0</div>
-                        <div className="text-secondary/60">Followers</div>
+                        <div className="font-semibold text-card-foreground">0</div>
+                        <div className="text-muted-foreground">Followers</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-semibold text-primary">0</div>
-                        <div className="text-secondary/60">Following</div>
+                        <div className="font-semibold text-card-foreground">0</div>
+                        <div className="text-muted-foreground">Following</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-semibold text-primary">0</div>
-                        <div className="text-secondary/60">Likes</div>
+                        <div className="font-semibold text-card-foreground">0</div>
+                        <div className="text-muted-foreground">Likes</div>
                       </div>
                     </div>
                   </>
@@ -261,8 +264,8 @@ const Profile = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`${
                 activeTab === tab.id
-                  ? 'bg-primary text-white'
-                  : 'text-secondary hover:bg-muted'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-foreground hover:bg-muted'
               }`}
             >
               <span className="mr-2">{tab.icon}</span>
@@ -276,28 +279,28 @@ const Profile = () => {
             <div className="space-y-6">
               {userPoems.length > 0 ? (
                 userPoems.map((poem) => (
-                  <Card key={poem.id} className="glass-card border-0 shadow-lg">
+                  <Card key={poem.id} className="glass-card border-border shadow-lg">
                     <CardContent className="p-6">
                       <div className="flex items-center gap-3 mb-4">
                         <Avatar className="w-10 h-10">
                           <AvatarImage src={profile?.profile_image_url || ''} />
-                          <AvatarFallback className="bg-accent text-white">
+                          <AvatarFallback className="bg-primary text-primary-foreground">
                             {getUserInitials()}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium">{profile?.['full name'] || profile?.username}</div>
-                          <div className="text-sm text-secondary/60">
+                          <div className="font-medium text-card-foreground">{profile?.['full name'] || profile?.username}</div>
+                          <div className="text-sm text-muted-foreground">
                             {new Date(poem.created_at).toLocaleDateString()}
                           </div>
                         </div>
                         {poem.form_tags && (
-                          <span className="ml-auto text-xs bg-accent/10 text-accent px-2 py-1 rounded-full">
+                          <span className="ml-auto text-xs bg-muted text-foreground px-2 py-1 rounded-full border border-border">
                             {poem.form_tags}
                           </span>
                         )}
                       </div>
-                      <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed">
+                      <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed text-card-foreground">
                         {poem.content}
                       </div>
                     </CardContent>
@@ -306,8 +309,8 @@ const Profile = () => {
               ) : (
                 <div className="text-center py-12">
                   <span className="text-6xl mb-4 block">📝</span>
-                  <h3 className="text-xl font-serif text-primary mb-2">No poems yet</h3>
-                  <p className="text-secondary/60">Start creating to see your poems here</p>
+                  <h3 className="text-xl font-serif text-foreground mb-2">No poems yet</h3>
+                  <p className="text-muted-foreground">Start creating to see your poems here</p>
                 </div>
               )}
             </div>
@@ -316,16 +319,16 @@ const Profile = () => {
           {activeTab === 'bookmarks' && (
             <div className="text-center py-12">
               <span className="text-6xl mb-4 block">🔖</span>
-              <h3 className="text-xl font-serif text-primary mb-2">No bookmarks yet</h3>
-              <p className="text-secondary/60">Poems you bookmark will appear here</p>
+              <h3 className="text-xl font-serif text-foreground mb-2">No bookmarks yet</h3>
+              <p className="text-muted-foreground">Poems you bookmark will appear here</p>
             </div>
           )}
           
           {activeTab === 'likes' && (
             <div className="text-center py-12">
               <span className="text-6xl mb-4 block">❤️</span>
-              <h3 className="text-xl font-serif text-primary mb-2">No liked poems yet</h3>
-              <p className="text-secondary/60">Poems you like will appear here</p>
+              <h3 className="text-xl font-serif text-foreground mb-2">No liked poems yet</h3>
+              <p className="text-muted-foreground">Poems you like will appear here</p>
             </div>
           )}
         </div>

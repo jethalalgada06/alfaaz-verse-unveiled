@@ -47,7 +47,7 @@ const Explore = () => {
   useEffect(() => {
     if (user) {
       fetchPoems();
-      fetchFeaturedPoets();
+      fetchFollowingUsers();
     }
   }, [user, activeFilter]);
 
@@ -94,15 +94,36 @@ const Explore = () => {
     }
   };
 
-  const fetchFeaturedPoets = async () => {
+  const fetchFollowingUsers = async () => {
     try {
+      // First get the list of users that the current user is following
+      const { data: followingData, error: followingError } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('followers_id', user?.id);
+
+      if (followingError) {
+        console.error('Error fetching following list:', followingError);
+        return;
+      }
+
+      const followingIds = followingData?.map(f => f.following_id) || [];
+
+      if (followingIds.length === 0) {
+        // If user is not following anyone, show empty state
+        setFeaturedPoets([]);
+        return;
+      }
+
+      // Then get the user details for those following users
       const { data, error } = await supabase
         .from('users')
         .select('id, username, "full name", profile_image_url')
+        .in('id', followingIds)
         .limit(4);
 
       if (error) {
-        console.error('Error fetching featured poets:', error);
+        console.error('Error fetching following users:', error);
         return;
       }
 
@@ -141,13 +162,13 @@ const Explore = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-background">
       <Navigation />
       
       <main className="max-w-4xl mx-auto p-4 pt-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-serif font-bold text-primary mb-2">Explore</h2>
-          <p className="text-secondary/70">Discover new voices and styles</p>
+          <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Explore</h2>
+          <p className="text-muted-foreground">Discover new voices and styles</p>
         </div>
 
         {/* Search Bar */}
@@ -156,7 +177,7 @@ const Explore = () => {
             placeholder="Search poems, poets, or styles..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-md bg-white border-gray-200 focus:border-accent"
+            className="max-w-md bg-background border-border focus:border-primary text-foreground"
           />
         </div>
 
@@ -169,8 +190,8 @@ const Explore = () => {
               onClick={() => setActiveFilter(filter.id)}
               className={`${
                 activeFilter === filter.id
-                  ? 'bg-accent text-white border-accent'
-                  : 'border-gray-200 text-secondary hover:bg-accent/10'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'border-border text-foreground hover:bg-muted'
               }`}
             >
               <span className="mr-2">{filter.icon}</span>
@@ -179,21 +200,29 @@ const Explore = () => {
           ))}
         </div>
 
-        {/* Featured Poets Section */}
+        {/* Following Users Section */}
         {featuredPoets.length > 0 && (
-          <div className="mb-8 p-6 bg-white rounded-lg shadow-sm">
-            <h3 className="text-xl font-serif font-semibold text-primary mb-4">Featured Poets</h3>
+          <div className="mb-8 p-6 bg-card rounded-lg shadow-sm border border-border">
+            <h3 className="text-xl font-serif font-semibold text-card-foreground mb-4">People You Follow</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {featuredPoets.map((poet) => (
                 <div key={poet.id} className="text-center p-4 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-                  <div className="w-16 h-16 bg-accent/20 rounded-full mx-auto mb-2 flex items-center justify-center">
-                    <span className="text-accent font-semibold">{getPoetInitials(poet)}</span>
+                  <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-2 flex items-center justify-center border border-border">
+                    <span className="text-foreground font-semibold">{getPoetInitials(poet)}</span>
                   </div>
-                  <p className="font-medium text-secondary">{poet["full name"] || poet.username}</p>
-                  <p className="text-xs text-secondary/60">Poet</p>
+                  <p className="font-medium text-card-foreground">{poet["full name"] || poet.username}</p>
+                  <p className="text-xs text-muted-foreground">Poet</p>
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Empty state for following */}
+        {featuredPoets.length === 0 && !loading && (
+          <div className="mb-8 p-6 bg-card rounded-lg shadow-sm border border-border text-center">
+            <h3 className="text-xl font-serif font-semibold text-card-foreground mb-2">No Following Yet</h3>
+            <p className="text-muted-foreground">Start following poets to see them here!</p>
           </div>
         )}
 
@@ -201,19 +230,19 @@ const Explore = () => {
         {loading ? (
           <div className="space-y-6">
             {[1, 2].map((i) => (
-              <div key={i} className="bg-white rounded-lg p-6 animate-pulse">
+              <div key={i} className="bg-card rounded-lg p-6 animate-pulse border border-border">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                  <div className="w-10 h-10 bg-muted rounded-full"></div>
                   <div className="space-y-2">
-                    <div className="w-24 h-4 bg-gray-200 rounded"></div>
-                    <div className="w-16 h-3 bg-gray-200 rounded"></div>
+                    <div className="w-24 h-4 bg-muted rounded"></div>
+                    <div className="w-16 h-3 bg-muted rounded"></div>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="w-48 h-6 bg-gray-200 rounded"></div>
+                  <div className="w-48 h-6 bg-muted rounded"></div>
                   <div className="space-y-2">
-                    <div className="w-full h-4 bg-gray-200 rounded"></div>
-                    <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
+                    <div className="w-full h-4 bg-muted rounded"></div>
+                    <div className="w-3/4 h-4 bg-muted rounded"></div>
                   </div>
                 </div>
               </div>
@@ -230,8 +259,8 @@ const Explore = () => {
         ) : (
           <div className="text-center py-12">
             <span className="text-6xl mb-4 block">🔍</span>
-            <h3 className="text-xl font-serif text-primary mb-2">No poems found</h3>
-            <p className="text-secondary/60">Try a different filter or be the first to create content!</p>
+            <h3 className="text-xl font-serif text-foreground mb-2">No poems found</h3>
+            <p className="text-muted-foreground">Try a different filter or be the first to create content!</p>
           </div>
         )}
       </main>
