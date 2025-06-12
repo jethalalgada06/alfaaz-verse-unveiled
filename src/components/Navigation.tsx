@@ -1,7 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +18,11 @@ const Navigation = () => {
   const [activeTab, setActiveTab] = useState(location.pathname);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+
+  // Update active tab when location changes
+  useEffect(() => {
+    setActiveTab(location.pathname);
+  }, [location.pathname]);
 
   const navItems = [
     { path: '/home', label: 'Feed', icon: '🏠' },
@@ -62,6 +66,10 @@ const Navigation = () => {
     return user?.email?.charAt(0).toUpperCase() || 'U';
   };
 
+  const getUserDisplayName = () => {
+    return user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  };
+
   return (
     <>
       {/* Header with logo and user menu */}
@@ -87,24 +95,33 @@ const Navigation = () => {
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-lg">
                   <div className="flex flex-col space-y-1 p-2">
                     <p className="text-sm font-medium text-foreground">
-                      {user?.user_metadata?.full_name || 'User'}
+                      {getUserDisplayName()}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {user?.email}
                     </p>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <DropdownMenuItem 
+                    onClick={() => navigate('/profile')}
+                    className="cursor-pointer hover:bg-gray-50"
+                  >
                     👤 Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/create')}>
+                  <DropdownMenuItem 
+                    onClick={() => navigate('/create')}
+                    className="cursor-pointer hover:bg-gray-50"
+                  >
                     ✍️ Create Poem
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                  <DropdownMenuItem 
+                    onClick={handleSignOut} 
+                    className="text-red-600 cursor-pointer hover:bg-red-50"
+                  >
                     🚪 Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>

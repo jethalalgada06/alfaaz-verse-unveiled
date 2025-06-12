@@ -13,6 +13,7 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -22,6 +23,55 @@ const Auth = () => {
       navigate('/home');
     }
   }, [user, navigate]);
+
+  const validateForm = () => {
+    if (!email.trim()) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!email.includes('@')) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!password) {
+      toast({
+        title: "Password required",
+        description: "Please enter your password",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (isSignUp && !fullName.trim()) {
+      toast({
+        title: "Full name required",
+        description: "Please enter your full name",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
@@ -59,51 +109,76 @@ const Auth = () => {
   };
 
   const handleEmailAuth = async () => {
-    if (!email || !password) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter both email and password",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/home`
+            emailRedirectTo: `${window.location.origin}/home`,
+            data: {
+              full_name: fullName.trim(),
+            }
           }
         });
 
         if (error) {
+          if (error.message.includes('already registered')) {
+            toast({
+              title: "Account exists",
+              description: "This email is already registered. Try signing in instead.",
+              variant: "destructive"
+            });
+            setIsSignUp(false);
+          } else {
+            toast({
+              title: "Sign Up Error",
+              description: error.message,
+              variant: "destructive"
+            });
+          }
+        } else if (data.user && !data.session) {
           toast({
-            title: "Sign Up Error",
-            description: error.message,
-            variant: "destructive"
+            title: "Check your email",
+            description: "We've sent you a confirmation link to complete your registration",
           });
         } else {
           toast({
-            title: "Check your email",
-            description: "We've sent you a confirmation link",
+            title: "Welcome to Alfaaz!",
+            description: "Your account has been created successfully",
           });
+          navigate('/home');
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
 
         if (error) {
-          toast({
-            title: "Sign In Error",
-            description: error.message,
-            variant: "destructive"
-          });
+          if (error.message.includes('Invalid login credentials')) {
+            toast({
+              title: "Invalid credentials",
+              description: "Please check your email and password and try again",
+              variant: "destructive"
+            });
+          } else if (error.message.includes('Email not confirmed')) {
+            toast({
+              title: "Email not verified",
+              description: "Please check your email and click the verification link",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "Sign In Error",
+              description: error.message,
+              variant: "destructive"
+            });
+          }
         } else {
           toast({
             title: "Welcome back!",
@@ -116,11 +191,17 @@ const Auth = () => {
       console.error('Email auth error:', error);
       toast({
         title: "Authentication Error",
-        description: "Something went wrong",
+        description: "Something went wrong. Please try again.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleEmailAuth();
     }
   };
 
@@ -147,19 +228,34 @@ const Auth = () => {
           
           <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
             <div className="space-y-3">
+              {isSignUp && (
+                <Input
+                  type="text"
+                  placeholder="Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="h-11 sm:h-12 text-base bg-gray-50 border-gray-200"
+                  disabled={isLoading}
+                />
+              )}
               <Input
                 type="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyPress={handleKeyPress}
                 className="h-11 sm:h-12 text-base bg-gray-50 border-gray-200"
+                disabled={isLoading}
               />
               <Input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={handleKeyPress}
                 className="h-11 sm:h-12 text-base bg-gray-50 border-gray-200"
+                disabled={isLoading}
               />
               <Button
                 onClick={handleEmailAuth}
@@ -217,7 +313,8 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-xs sm:text-sm text-black hover:text-gray-600 underline"
+                disabled={isLoading}
+                className="text-xs sm:text-sm text-black hover:text-gray-600 underline disabled:opacity-50"
               >
                 {isSignUp 
                   ? 'Already have an account? Sign in' 

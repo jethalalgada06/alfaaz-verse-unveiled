@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Create = () => {
   const [title, setTitle] = useState('');
@@ -16,6 +18,7 @@ const Create = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handlePublish = async () => {
     if (!title.trim() || !content.trim()) {
@@ -27,21 +30,59 @@ const Create = () => {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to publish your poem",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsPublishing(true);
     
-    // Simulate publishing
-    setTimeout(() => {
-      setIsPublishing(false);
+    try {
+      const { error } = await supabase
+        .from('poems table')
+        .insert({
+          user_id: user.id,
+          content: content.trim(),
+          form_tags: style || null
+        });
+
+      if (error) {
+        throw error;
+      }
+
       toast({
         title: "Poem published!",
         description: "Your poem has been shared with the community",
       });
+      
+      // Reset form
+      setTitle('');
+      setContent('');
+      setStyle('');
+      
       navigate('/home');
-    }, 1500);
+    } catch (error) {
+      console.error('Error publishing poem:', error);
+      toast({
+        title: "Error publishing poem",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const formatContent = (text: string) => {
     return text.replace(/\n{3,}/g, '\n\n');
+  };
+
+  const getUserName = () => {
+    return user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Poet';
   };
 
   return (
@@ -109,7 +150,7 @@ const Create = () => {
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button
                   onClick={handlePublish}
-                  disabled={isPublishing}
+                  disabled={isPublishing || !title.trim() || !content.trim()}
                   className="bg-accent hover:bg-accent/90 text-white px-4 sm:px-6 text-sm sm:text-base order-1 sm:order-1"
                 >
                   {isPublishing ? (
@@ -121,8 +162,16 @@ const Create = () => {
                     'Publish Poem'
                   )}
                 </Button>
-                <Button variant="outline" className="border-gray-200 text-sm sm:text-base order-2 sm:order-2">
-                  Save Draft
+                <Button 
+                  variant="outline" 
+                  className="border-gray-200 text-sm sm:text-base order-2 sm:order-2"
+                  onClick={() => {
+                    setTitle('');
+                    setContent('');
+                    setStyle('');
+                  }}
+                >
+                  Clear
                 </Button>
               </div>
             </CardContent>
@@ -137,10 +186,12 @@ const Create = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-accent/20 rounded-full flex items-center justify-center">
-                    <span className="text-accent font-semibold text-sm sm:text-base">P</span>
+                    <span className="text-accent font-semibold text-sm sm:text-base">
+                      {getUserName().charAt(0).toUpperCase()}
+                    </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-primary text-sm sm:text-base">Poet Name</p>
+                    <p className="font-medium text-primary text-sm sm:text-base">{getUserName()}</p>
                     <p className="text-xs sm:text-sm text-secondary/60">Just now</p>
                   </div>
                   {style && (
