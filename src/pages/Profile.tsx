@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
@@ -26,11 +25,17 @@ interface Poem {
   created_at: string;
 }
 
+interface UserStats {
+  followers_count: number;
+  following_count: number;
+}
+
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('poems');
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userPoems, setUserPoems] = useState<Poem[]>([]);
+  const [userStats, setUserStats] = useState<UserStats>({ followers_count: 0, following_count: 0 });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -46,6 +51,7 @@ const Profile = () => {
     if (user) {
       fetchProfile();
       fetchUserPoems();
+      fetchUserStats();
     }
   }, [user]);
 
@@ -90,6 +96,34 @@ const Profile = () => {
       }
 
       setUserPoems(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const fetchUserStats = async () => {
+    try {
+      // Get followers count
+      const { data: followersData, error: followersError } = await supabase
+        .from('follows')
+        .select('*')
+        .eq('following_id', user?.id);
+
+      // Get following count
+      const { data: followingData, error: followingError } = await supabase
+        .from('follows')
+        .select('*')
+        .eq('followers_id', user?.id);
+
+      if (followersError || followingError) {
+        console.error('Error fetching user stats:', followersError || followingError);
+        return;
+      }
+
+      setUserStats({
+        followers_count: followersData?.length || 0,
+        following_count: followingData?.length || 0
+      });
     } catch (error) {
       console.error('Error:', error);
     }
@@ -226,11 +260,11 @@ const Profile = () => {
                         <div className="text-muted-foreground">Poems</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-semibold text-card-foreground">0</div>
+                        <div className="font-semibold text-card-foreground">{userStats.followers_count}</div>
                         <div className="text-muted-foreground">Followers</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-semibold text-card-foreground">0</div>
+                        <div className="font-semibold text-card-foreground">{userStats.following_count}</div>
                         <div className="text-muted-foreground">Following</div>
                       </div>
                       <div className="text-center">
