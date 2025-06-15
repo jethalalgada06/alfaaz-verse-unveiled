@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -16,13 +15,25 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
+  // Gate rendering until auth state is loaded
   useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       navigate('/home');
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-secondary/70">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const validateForm = () => {
     if (!email.trim()) {
