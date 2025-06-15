@@ -124,10 +124,9 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="min-h-screen bg-white pb-20 overflow-x-hidden">
       <Navigation />
-      
-      <main className="max-w-4xl mx-auto p-3 sm:p-4 pt-6 sm:pt-8">
+      <main className="max-w-4xl mx-auto p-2 xs:p-3 sm:p-4 pt-6 sm:pt-8">
         <div className="mb-6 sm:mb-8">
           <h2 className="text-2xl sm:text-3xl font-serif font-bold text-black mb-2">Your Feed</h2>
           <p className="text-sm sm:text-base text-gray-600">Discover beautiful poetry from our community</p>
@@ -137,7 +136,9 @@ const Home = () => {
           <div className="space-y-4 sm:space-y-6">
             {poems.map((poem) => (
               <div key={poem.id} className="animate-fade-in">
-                <PoemCard poem={formatPoemForCard(poem)} />
+                <div className="break-words">
+                  <PoemCard poem={formatPoemForCard(poem)} />
+                </div>
               </div>
             ))}
           </div>
@@ -148,7 +149,7 @@ const Home = () => {
             <p className="text-sm sm:text-base text-gray-600 mb-6">Be the first to share a poem with the community!</p>
             <button 
               onClick={() => window.location.href = '/create'}
-              className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+              className="bg-black text-white px-4 xs:px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors"
             >
               Create Your First Poem
             </button>
@@ -160,3 +161,4 @@ const Home = () => {
 };
 
 export default Home;
+

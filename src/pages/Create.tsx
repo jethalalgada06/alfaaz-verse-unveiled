@@ -86,22 +86,21 @@ const Create = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted pb-20">
+    <div className="min-h-screen bg-muted pb-20 overflow-x-hidden">
       <Navigation />
-      
-      <main className="max-w-6xl mx-auto p-3 sm:p-4 pt-6 sm:pt-8">
+      <main className="max-w-6xl mx-auto p-2 xs:p-3 sm:p-4 pt-6 sm:pt-8">
         <div className="mb-6 sm:mb-8">
           <h2 className="text-2xl sm:text-3xl font-serif font-bold text-primary mb-2">Create New Poem</h2>
           <p className="text-sm sm:text-base text-secondary/70">Share your words with the world</p>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xs:gap-4 sm:gap-6 lg:gap-8">
           {/* Editor */}
           <Card className="glass-card border-0 shadow-lg order-1">
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="text-lg sm:text-xl font-serif text-primary">Compose</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
+            <CardContent className="space-y-2 xs:space-y-3 sm:space-y-4">
               <div>
                 <label className="text-sm font-medium text-secondary mb-2 block">
                   Title
@@ -111,6 +110,7 @@ const Create = () => {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter your poem title..."
                   className="bg-white border-gray-200 focus:border-accent text-sm sm:text-base"
+                  maxLength={64}
                 />
               </div>
 
@@ -142,12 +142,13 @@ const Create = () => {
                   value={content}
                   onChange={(e) => setContent(formatContent(e.target.value))}
                   placeholder="Write your poem here..."
-                  rows={8}
-                  className="bg-white border-gray-200 focus:border-accent font-serif resize-none text-sm sm:text-base min-h-[200px] sm:min-h-[300px]"
+                  rows={6}
+                  className="bg-white border-gray-200 focus:border-accent font-serif resize-none text-sm sm:text-base min-h-[150px] xs:min-h-[200px] sm:min-h-[300px] max-h-[400px] xs:max-h-[600px] break-words"
+                  maxLength={1200}
                 />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-2 xs:gap-3 pt-4">
                 <Button
                   onClick={handlePublish}
                   disabled={isPublishing || !title.trim() || !content.trim()}
@@ -178,20 +179,20 @@ const Create = () => {
           </Card>
 
           {/* Preview */}
-          <Card className="glass-card border-0 shadow-lg order-2 xl:order-2">
+          <Card className="glass-card border-0 shadow-lg order-2 xl:order-2 mt-4 xl:mt-0">
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="text-lg sm:text-xl font-serif text-primary">Preview</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-accent/20 rounded-full flex items-center justify-center">
-                    <span className="text-accent font-semibold text-sm sm:text-base">
+              <div className="space-y-2 xs:space-y-4">
+                <div className="flex items-center gap-2 xs:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-accent/20 rounded-full flex items-center justify-center shrink-0">
+                    <span className="text-accent font-semibold text-sm sm:text-base truncate">
                       {getUserName().charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-primary text-sm sm:text-base">{getUserName()}</p>
+                    <p className="font-medium text-primary text-xs xs:text-sm sm:text-base truncate">{getUserName()}</p>
                     <p className="text-xs sm:text-sm text-secondary/60">Just now</p>
                   </div>
                   {style && (
@@ -202,15 +203,15 @@ const Create = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-lg sm:text-xl font-serif font-semibold text-primary mb-3">
+                  <h3 className="text-lg sm:text-xl font-serif font-semibold text-primary mb-3 truncate">
                     {title || 'Untitled Poem'}
                   </h3>
-                  <div className="poetry-text text-secondary/90 leading-relaxed whitespace-pre-line min-h-[150px] sm:min-h-[200px] text-sm sm:text-base">
+                  <div className="poetry-text text-secondary/90 leading-relaxed whitespace-pre-line min-h-[100px] xs:min-h-[150px] sm:min-h-[200px] text-sm sm:text-base break-words">
                     {content || 'Your poem will appear here as you type...'}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-2 xs:gap-4 pt-4 border-t border-gray-100">
                   <span className="text-secondary/60 text-xs sm:text-sm">🤍 0</span>
                   <span className="text-secondary/60 text-xs sm:text-sm">💬 0</span>
                   <span className="text-secondary/60 text-xs sm:text-sm ml-auto">📄</span>
